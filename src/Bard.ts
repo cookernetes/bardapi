@@ -25,20 +25,24 @@ export class BardAPI {
   }
 
   private async get_bard_config() {
-    const res = await fetchWithTimeout("https://bard.google.com/", {
-      headers: {
-        ...this.headers,
-        Cookie: `__Secure-1PSID=${this.sessionId}`,
+    const res = await fetchWithTimeout(
+      "https://bard.google.com/",
+      {
+        headers: {
+          ...this.headers,
+          Cookie: `__Secure-1PSID=${this.sessionId}`,
+        },
       },
-    }, 10000);
+      10000
+    );
 
     if (res.status !== 200) {
       throw new Error("Could not get Google Bard");
     }
 
     const data = await res.text();
-    const bl = data.match(/"cfb2h":"(.*?)"/)?.[1]
-    const at = data.match(/"SNlM0e":"(.*?)"/)?.[1]
+    const bl = data.match(/"cfb2h":"(.*?)"/)?.[1];
+    const at = data.match(/"SNlM0e":"(.*?)"/)?.[1];
 
     if (!bl || !at) {
       throw new Error("Could not get Google Bard Configuration");
@@ -55,7 +59,6 @@ export class BardAPI {
     previousChoiceId?: string;
   }): Promise<BardChatResponse> {
     const { bl, at } = await this.get_bard_config();
-
 
     const qsParams = new URLSearchParams({
       bl,
@@ -80,7 +83,8 @@ export class BardAPI {
 
     // Make request to bard
     const res = await fetchWithTimeout(
-      "https://bard.google.com/_/BardChatUi/data/assistant.lamda.BardFrontendService/StreamGenerate?" + qsParams.toString(),
+      "https://bard.google.com/_/BardChatUi/data/assistant.lamda.BardFrontendService/StreamGenerate?" +
+        qsParams.toString(),
       {
         method: "POST",
         headers: {

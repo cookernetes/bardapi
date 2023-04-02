@@ -1,6 +1,6 @@
 {
   "name": "bardapi",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": {
     "name": "cookernetes",
     "email": "bearcodes@outlook.com"
@@ -11,15 +11,14 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@types/axios": "^0.14.0",
+    "tsx": "^3.12.6",
     "@types/node": "^18.15.11",
     "dotenv": "^16.0.3",
-    "ts-node": "^10.9.1",
     "tsc": "^2.0.4",
     "typescript": "^5.0.3"
   },
   "scripts": {
-    "dev": "ts-node --esm src/example.ts",
+    "dev": "tsx src/example.ts",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
