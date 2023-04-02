@@ -14,9 +14,9 @@ export class BardAPI {
   };
 
   private conversationalData = {
-    conversation_id: "",
-    response_id: "",
-    choice_id: "",
+    conversationId: "",
+    responseId: "",
+    choiceId: "",
   };
 
   private _reqid: number;
@@ -47,7 +47,7 @@ export class BardAPI {
       throw new Error("Could not get Google Bard Configuration");
     }
 
-    return {bl, at};
+    return { bl, at };
   }
 
   async ask({
@@ -57,7 +57,7 @@ export class BardAPI {
     message: string;
     previousChoiceId?: string;
   }): Promise<BardChatResponse> {
-    const {bl, at} = await this.get_bard_config();
+    const { bl, at } = await this.get_bard_config();
 
 
     const qsParams = new URLSearchParams({
@@ -66,14 +66,14 @@ export class BardAPI {
       rt: "j",
     });
 
-    let { conversation_id, response_id, choice_id } = this.conversationalData;
+    let { conversationId, responseId, choiceId } = this.conversationalData;
 
-    if (previousChoiceId) choice_id = previousChoiceId;
+    if (previousChoiceId) choiceId = previousChoiceId;
 
     const messageStruct = [
       [message],
       null,
-      [conversation_id, response_id, choice_id],
+      [conversationId, responseId, choiceId],
     ];
 
     const body = {
@@ -107,16 +107,16 @@ export class BardAPI {
     const choiceIdBack = chatData[4][0][0];
 
     this.conversationalData = {
-      conversation_id: conversationIdBack,
-      response_id: responseIdBack,
-      choice_id: choiceIdBack,
+      conversationId: conversationIdBack,
+      responseId: responseIdBack,
+      choiceId: choiceIdBack,
     };
 
     return {
       response: messageBack,
-      conversation_id: conversationIdBack,
-      response_id: responseIdBack,
-      choice_id: choiceIdBack,
+      conversationId: conversationIdBack,
+      responseId: responseIdBack,
+      choiceId: choiceIdBack,
 
       otherChoices: (chatData[4] as any[][]).map((choice) => ({
         choiceId: choice[0],
@@ -127,18 +127,18 @@ export class BardAPI {
 
   reset() {
     this.conversationalData = {
-      conversation_id: "",
-      response_id: "",
-      choice_id: "",
+      conversationId: "",
+      responseId: "",
+      choiceId: "",
     };
   }
 }
 
 export interface BardChatResponse {
   response: string;
-  conversation_id: string;
-  response_id: string;
-  choice_id: string;
+  conversationId: string;
+  responseId: string;
+  choiceId: string;
 
   otherChoices: {
     choiceId: string;
