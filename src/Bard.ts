@@ -26,7 +26,7 @@ export class BardAPI {
     this._reqid = Math.floor(Math.random() * 9000) + 1000;
   }
 
-  private async get_snlm0e() {
+  private async get_bard_config() {
     const res = await axios.get("https://bard.google.com/", {
       headers: {
         ...this.headers,
@@ -39,7 +39,15 @@ export class BardAPI {
       throw new Error("Could not get Google Bard");
     }
 
-    return (res.data as string).match(/SNlM0e":"(.*?)"/)?.[1];
+    const data = res.data as string;
+    const bl = data.match(/"cfb2h":"(.*?)"/)?.[1]
+    const at = data.match(/"SNlM0e":"(.*?)"/)?.[1]
+
+    if (!bl || !at) {
+      throw new Error("Could not get Google Bard Configuration");
+    }
+
+    return {bl, at};
   }
 
   async ask({
@@ -49,8 +57,11 @@ export class BardAPI {
     message: string;
     previousChoiceId?: string;
   }): Promise<BardChatResponse> {
+    const {bl, at} = await this.get_bard_config();
+
+
     const qsParams = new URLSearchParams({
-      bl: "boq_assistant-bard-web-server_20230326.21_p0",
+      bl,
       _reqid: this._reqid.toString(),
       rt: "j",
     });
@@ -65,11 +76,9 @@ export class BardAPI {
       [conversation_id, response_id, choice_id],
     ];
 
-    const SNlM0e = await this.get_snlm0e();
-
     const body = {
       "f.req": JSON.stringify([null, JSON.stringify(messageStruct)]),
-      at: SNlM0e,
+      at,
     };
 
     // Make request to bard
