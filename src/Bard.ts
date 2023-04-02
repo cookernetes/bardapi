@@ -1,5 +1,3 @@
-import axios from "axios";
-
 export class BardAPI {
   sessionId: string;
 
@@ -27,19 +25,18 @@ export class BardAPI {
   }
 
   private async get_bard_config() {
-    const res = await axios.get("https://bard.google.com/", {
+    const res = await fetchWithTimeout("https://bard.google.com/", {
       headers: {
         ...this.headers,
         Cookie: `__Secure-1PSID=${this.sessionId}`,
       },
-      timeout: 10000,
-    });
+    }, 10000);
 
     if (res.status !== 200) {
       throw new Error("Could not get Google Bard");
     }
 
-    const data = res.data as string;
+    const data = await res.text();
     const bl = data.match(/"cfb2h":"(.*?)"/)?.[1]
     const at = data.match(/"SNlM0e":"(.*?)"/)?.[1]
 
@@ -82,24 +79,28 @@ export class BardAPI {
     };
 
     // Make request to bard
-    const res = await axios.post(
-      "https://bard.google.com/_/BardChatUi/data/assistant.lamda.BardFrontendService/StreamGenerate",
-      body,
+    const res = await fetchWithTimeout(
+      "https://bard.google.com/_/BardChatUi/data/assistant.lamda.BardFrontendService/StreamGenerate?" + qsParams.toString(),
       {
-        params: qsParams,
+        method: "POST",
         headers: {
           ...this.headers,
           Cookie: `__Secure-1PSID=${this.sessionId}`,
         },
-        timeout: 120000,
-      }
+        body: new URLSearchParams(body).toString(),
+      },
+      120000
     );
 
-    const dataBack = res.data as string;
+    const dataBack = await res.text();
 
     // Parse response data
     const splitData = JSON.parse(dataBack.split("\n")[2]) as any;
     const chatData = JSON.parse(splitData[0][0][2]) as any;
+
+    if (!chatData) {
+      throw new Error("BardAPI.ask: Invalid response - no chat data");
+    }
 
     const messageBack = chatData[0][0] as string;
     const conversationIdBack = chatData[1][0];
@@ -144,4 +145,23 @@ export interface BardChatResponse {
     choiceId: string;
     message: string;
   }[];
+}
+
+async function fetchWithTimeout(
+  url: string,
+  opts: RequestInit,
+  timeout: number
+) {
+  // Create a signal with timeout
+  const signal = AbortSignal.timeout(timeout);
+
+  // Make the fetch request
+  const _fetchPromise = fetch(url, {
+    ...opts,
+    signal,
+  });
+
+  // TODO: Await the fetch with a catch in case it's aborted which signals an error
+  const result = await _fetchPromise;
+  return result;
 }
