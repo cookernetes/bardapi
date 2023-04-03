@@ -20,7 +20,6 @@ A strongly typed (unofficial) interface to communicate with Google's Bard AI via
 ## Built With
 
 - TypeScript
-- Axios
 
 ## Getting Started
 
